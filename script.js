@@ -3,7 +3,7 @@ const CONFIG = {
     API_KEY_1: '', // Will be loaded from settings
     API_KEY_2: '', // Will be loaded from settings
     API_URL_1: 'https://api.groq.com/openai/v1/chat/completions',
-    API_URL_2: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'
+    API_URL_2: ''
 };
 
 // DOM Elements
@@ -51,7 +51,7 @@ let selectedResponses = new Map(); // messageId -> [model1, model2] or [model]
 
 // Conversation history for each model (separate contexts)
 let model1History = []; // For Model 1 (Groq)
-let model2History = []; // For Model 2 (Gemini)
+let model2History = []; // For Model 2 (Eden)
 
 // Initialize
 init();
@@ -298,7 +298,7 @@ function createDualResponseContainer(messageId) {
         <div class="response-header">
             <div class="model-name">
                 <span class="model-badge">Model 2</span>
-                Gemini Pro
+                Eden Pro
             </div>
             <div class="response-actions">
                 <button class="response-action-btn" onclick="selectResponse('${messageId}', 'model2')">
@@ -327,7 +327,7 @@ function createSingleResponseContainer(messageId, model) {
     container.className = 'dual-response-container single-model';
     container.id = `response-${messageId}`;
     
-    const modelName = model === 'model1' ? 'Groq (Llama 3.1)' : 'Gemini Pro';
+    const modelName = model === 'model1' ? 'Groq (Llama 3.1)' : 'Eden Pro';
     const modelLabel = model === 'model1' ? 'Model 1' : 'Model 2';
     
     const panel = document.createElement('div');
@@ -413,7 +413,7 @@ async function sendToModel2(message, messageId) {
     try {
         console.log('Sending to Model 2 with history:', model2History);
         
-        // Format for Gemini API
+        // Format for Eden API
         const contents = model2History.map(msg => ({
             role: msg.role === 'user' ? 'user' : 'model',
             parts: [{ text: msg.content }]
@@ -443,7 +443,7 @@ async function sendToModel2(message, messageId) {
                 contentEl.textContent = aiResponse;
             }
             
-            // Update token usage (approximate for Gemini)
+            // Update token usage (approximate for Eden)
             const tokensUsed = Math.ceil(aiResponse.length / 4);
             updateTokenUsage(tokensUsed);
             
@@ -666,7 +666,7 @@ function recreateDualResponse(messageId, content1, content2) {
         <div class="response-header">
             <div class="model-name">
                 <span class="model-badge">Model 2</span>
-                Gemini Pro
+                Eden Pro
             </div>
         </div>
         <div class="response-body">
@@ -685,7 +685,7 @@ function recreateDualResponse(messageId, content1, content2) {
 }
 
 function recreateSingleResponse(messageId, content, model) {
-    const modelName = model === 'model1' ? 'Groq (Llama 3.1)' : 'Gemini Pro';
+    const modelName = model === 'model1' ? 'Groq (Llama 3.1)' : 'Eden Pro';
     const modelLabel = model === 'model1' ? 'Model 1' : 'Model 2';
     
     const container = document.createElement('div');
