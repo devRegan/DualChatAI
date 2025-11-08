@@ -3,7 +3,7 @@ const CONFIG = {
     API_KEY_1: '', // Will be loaded from settings
     API_KEY_2: '', // Will be loaded from settings
     API_URL_1: 'https://api.groq.com/openai/v1/chat/completions',
-    API_URL_2: 'https://aimlapi.com/app/keys'
+    API_URL_2: 'https://api.groq.com/openai/v1/chat/completions'
 };
 
 // DOM Elements
