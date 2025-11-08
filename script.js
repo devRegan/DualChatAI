@@ -413,39 +413,38 @@ async function sendToModel2(message, messageId) {
     try {
         console.log('Sending to Model 2 with history:', model2History);
         
-        // Format for Eden API
-        const contents = model2History.map(msg => ({
-            role: msg.role === 'user' ? 'user' : 'model',
-            parts: [{ text: msg.content }]
-        }));
-
-        const response = await fetch(`${CONFIG.API_URL_2}?key=${CONFIG.API_KEY_2}`, {
+        const response = await fetch(CONFIG.API_URL_2, {
             method: 'POST',
             headers: {
+                // FIX: Use Authorization header for Groq API KEY 2
+                'Authorization': `Bearer ${CONFIG.API_KEY_2}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                contents: contents,
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 1000,
-                }
+                // Groq/OpenAI compatible payload
+                model: 'llama-3.1-8b-instant', 
+                messages: model2History,
+                temperature: 0.7,
+                max_tokens: 1000
             })
         });
 
         const data = await response.json();
         console.log('Model 2 Response:', data);
         
-        if (response.ok && data.candidates && data.candidates[0]) {
-            const aiResponse = data.candidates[0].content.parts[0].text.trim();
+        if (response.ok && data.choices && data.choices[0]) {
+            const aiResponse = data.choices[0].message.content.trim();
+            // Target element is content2-${messageId} or content-${messageId}
             const contentEl = document.getElementById(`content2-${messageId}`) || document.getElementById(`content-${messageId}`);
             if (contentEl) {
                 contentEl.textContent = aiResponse;
             }
             
-            // Update token usage (approximate for Eden)
-            const tokensUsed = Math.ceil(aiResponse.length / 4);
-            updateTokenUsage(tokensUsed);
+            // Update token usage
+            if (data.usage) {
+                const tokensUsed = data.usage.total_tokens || 0;
+                updateTokenUsage(tokensUsed);
+            }
             
             return aiResponse;
         } else if (data.error) {
@@ -467,6 +466,65 @@ async function sendToModel2(message, messageId) {
         return null;
     }
 }
+
+// async function sendToModel2(message, messageId) {
+//     try {
+//         console.log('Sending to Model 2 with history:', model2History);
+        
+//         // Format for Eden API
+//         const contents = model2History.map(msg => ({
+//             role: msg.role === 'user' ? 'user' : 'model',
+//             parts: [{ text: msg.content }]
+//         }));
+
+//         const response = await fetch(`${CONFIG.API_URL_2}?key=${CONFIG.API_KEY_2}`, {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify({
+//                 contents: contents,
+//                 generationConfig: {
+//                     temperature: 0.7,
+//                     maxOutputTokens: 1000,
+//                 }
+//             })
+//         });
+
+//         const data = await response.json();
+//         console.log('Model 2 Response:', data);
+        
+//         if (response.ok && data.candidates && data.candidates[0]) {
+//             const aiResponse = data.candidates[0].content.parts[0].text.trim();
+//             const contentEl = document.getElementById(`content2-${messageId}`) || document.getElementById(`content-${messageId}`);
+//             if (contentEl) {
+//                 contentEl.textContent = aiResponse;
+//             }
+            
+//             // Update token usage (approximate for Eden)
+//             const tokensUsed = Math.ceil(aiResponse.length / 4);
+//             updateTokenUsage(tokensUsed);
+            
+//             return aiResponse;
+//         } else if (data.error) {
+//             const errorMsg = `Error: ${data.error.message}`;
+//             const contentEl = document.getElementById(`content2-${messageId}`) || document.getElementById(`content-${messageId}`);
+//             if (contentEl) {
+//                 contentEl.textContent = errorMsg;
+//             }
+//             console.error('Model 2 Error:', data.error.message);
+//             return null;
+//         }
+//     } catch (error) {
+//         const errorMsg = 'Connection error with Model 2';
+//         const contentEl = document.getElementById(`content2-${messageId}`) || document.getElementById(`content-${messageId}`);
+//         if (contentEl) {
+//             contentEl.textContent = errorMsg;
+//         }
+//         console.error('Model 2 Network Error:', error);
+//         return null;
+//     }
+// }
 
 function selectResponse(messageId, model) {
     const container = document.getElementById(`response-${messageId}`);
