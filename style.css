@@ -673,6 +673,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .header-left {
@@ -681,11 +682,92 @@ body {
     gap: 16px;
 }
 
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .chat-title {
     color: var(--text-primary);
     font-weight: 600;
     font-size: 16px;
     letter-spacing: 0.3px;
+}
+
+/* Model Toggle Buttons in Header */
+.model-toggles {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.model-toggle-btn {
+    background: var(--tertiary-bg);
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+}
+
+.model-toggle-btn:hover {
+    background: var(--hover-bg);
+    transform: translateY(-1px);
+}
+
+.model-toggle-btn.active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.model-toggle-btn.active .model-status-indicator {
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.model-status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.model-toggle-btn:not(.active) .model-status-indicator {
+    background: #ef4444;
+}
+
+.model-toggle-text {
+    white-space: nowrap;
+}
+
+/* Animation for toggle */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    }
+}
+
+.model-toggle-btn.active:active {
+    animation: pulse 0.5s;
 }
 
 .chat-container {
@@ -926,6 +1008,29 @@ body {
     cursor: not-allowed;
     transform: scale(1);
     opacity: 0.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .model-toggle-btn {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    .dual-response-container {
+        flex-direction: column;
+    }
 }
 
 /* Scrollbar Styling */

@@ -115,14 +115,14 @@
                         <label class="toggle-label">
                             <input type="checkbox" id="enableModel1" checked>
                             <span class="toggle-slider"></span>
-                            <span class="toggle-text">Enable Model 1 (Groq)</span>
+                            <span class="toggle-text">Enable AI Model V1</span>
                         </label>
                     </div>
                     <div class="model-toggle">
                         <label class="toggle-label">
                             <input type="checkbox" id="enableModel2" checked>
                             <span class="toggle-slider"></span>
-                            <span class="toggle-text">Enable Model 2 (Eden)</span>
+                            <span class="toggle-text">Enable AI Model V2</span>
                         </label>
                     </div>
                 </div>
@@ -131,12 +131,20 @@
                 <div class="settings-group">
                     <h3>API Configuration</h3>
                     <div class="api-input-group">
-                        <label>Model 1 API Key (Groq)</label>
-                        <input type="password" id="apiKey1" placeholder="Enter Groq API Key">
+                        <label>AI Model V1 API Key</label>
+                        <input type="password" id="apiKey1" placeholder="Enter AI Model V1 API Key">
                     </div>
                     <div class="api-input-group">
-                        <label>Model 2 API Key (Eden)</label>
-                        <input type="password" id="apiKey2" placeholder="Enter Eden API Key">
+                        <label>AI Model V1 API URL (Optional)</label>
+                        <input type="text" id="apiUrl1" placeholder="https://api.example.com/v1/chat/completions">
+                    </div>
+                    <div class="api-input-group">
+                        <label>AI Model V2 API Key</label>
+                        <input type="password" id="apiKey2" placeholder="Enter AI Model V2 API Key">
+                    </div>
+                    <div class="api-input-group">
+                        <label>AI Model V2 API URL (Optional)</label>
+                        <input type="text" id="apiUrl2" placeholder="https://api.example.com/v1/chat/completions">
                     </div>
                 </div>
 
@@ -151,6 +159,18 @@
         <div class="header">
             <div class="header-left">
                 <span class="chat-title" id="chatTitle">New Chat</span>
+            </div>
+            <div class="header-right">
+                <div class="model-toggles">
+                    <button class="model-toggle-btn active" id="toggleModel1Btn" title="Toggle AI Model V1">
+                        <span class="model-status-indicator"></span>
+                        <span class="model-toggle-text">AI Model V1</span>
+                    </button>
+                    <button class="model-toggle-btn active" id="toggleModel2Btn" title="Toggle AI Model V2">
+                        <span class="model-status-indicator"></span>
+                        <span class="model-toggle-text">AI Model V2</span>
+                    </button>
+                </div>
             </div>
         </div>
 

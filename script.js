@@ -1,9 +1,9 @@
-// Load environment variables
+// Configuration
 const CONFIG = {
     API_KEY_1: '', // Will be loaded from settings
     API_KEY_2: '', // Will be loaded from settings
-    API_URL_1: 'https://api.groq.com/openai/v1/chat/completions',
-    API_URL_2: 'https://api.groq.com/openai/v1/chat/completions'
+    API_URL_1: 'https://api.groq.com/openai/v1/chat/completions', // Default URL, can be changed in settings
+    API_URL_2: 'https://api.groq.com/openai/v1/chat/completions' // Default URL, can be changed in settings
 };
 
 // DOM Elements
@@ -27,8 +27,12 @@ const closeSettingsBtn = document.getElementById('closeSettingsBtn');
 const saveSettingsBtn = document.getElementById('saveSettingsBtn');
 const apiKey1Input = document.getElementById('apiKey1');
 const apiKey2Input = document.getElementById('apiKey2');
+const apiUrl1Input = document.getElementById('apiUrl1');
+const apiUrl2Input = document.getElementById('apiUrl2');
 const enableModel1 = document.getElementById('enableModel1');
 const enableModel2 = document.getElementById('enableModel2');
+const toggleModel1Btn = document.getElementById('toggleModel1Btn');
+const toggleModel2Btn = document.getElementById('toggleModel2Btn');
 
 // State Management
 let chats = JSON.parse(localStorage.getItem('chats')) || [];
@@ -43,15 +47,21 @@ let settings = JSON.parse(localStorage.getItem('settings')) || {
     model1Enabled: true,
     model2Enabled: true,
     apiKey1: '',
-    apiKey2: ''
+    apiKey2: '',
+    apiUrl1: 'https://api.groq.com/openai/v1/chat/completions',
+    apiUrl2: 'https://api.groq.com/openai/v1/chat/completions'
 };
+
+// Active model states (independent from settings, for dynamic control)
+let model1Active = true;
+let model2Active = true;
 
 // Selected responses tracking
 let selectedResponses = new Map(); // messageId -> [model1, model2] or [model]
 
 // Conversation history for each model (separate contexts)
-let model1History = []; // For Model 1 (Groq)
-let model2History = []; // For Model 2 (Eden)
+let model1History = []; // For AI Model V1
+let model2History = []; // For AI Model V2
 
 // Initialize
 init();
@@ -75,10 +85,21 @@ function init() {
     // Load settings
     CONFIG.API_KEY_1 = settings.apiKey1;
     CONFIG.API_KEY_2 = settings.apiKey2;
+    CONFIG.API_URL_1 = settings.apiUrl1 || 'https://api.groq.com/openai/v1/chat/completions';
+    CONFIG.API_URL_2 = settings.apiUrl2 || 'https://api.groq.com/openai/v1/chat/completions';
     apiKey1Input.value = settings.apiKey1;
     apiKey2Input.value = settings.apiKey2;
+    apiUrl1Input.value = settings.apiUrl1 || '';
+    apiUrl2Input.value = settings.apiUrl2 || '';
     enableModel1.checked = settings.model1Enabled;
     enableModel2.checked = settings.model2Enabled;
+
+    // Initialize active states from settings
+    model1Active = settings.model1Enabled && CONFIG.API_KEY_1;
+    model2Active = settings.model2Enabled && CONFIG.API_KEY_2;
+    
+    // Update toggle button states
+    updateToggleButtons();
 
     // Load chats or create first one
     if (chats.length === 0) {
@@ -102,6 +123,10 @@ function setupEventListeners() {
     // Chat actions
     renameChatBtn.addEventListener('click', renameCurrentChat);
     saveChatBtn.addEventListener('click', saveCurrentChat);
+    
+    // Model toggle buttons in header
+    toggleModel1Btn.addEventListener('click', toggleModel1);
+    toggleModel2Btn.addEventListener('click', toggleModel2);
     
     // Token toggle
     toggleTokensBtn.addEventListener('click', () => {
@@ -144,6 +169,40 @@ function toggleSidebarCollapse() {
     localStorage.setItem('sidebarCollapsed', sidebarCollapsed);
 }
 
+function toggleModel1() {
+    if (!settings.model1Enabled || !CONFIG.API_KEY_1) {
+        alert('Please configure AI Model V1 in Settings first.');
+        return;
+    }
+    model1Active = !model1Active;
+    updateToggleButtons();
+}
+
+function toggleModel2() {
+    if (!settings.model2Enabled || !CONFIG.API_KEY_2) {
+        alert('Please configure AI Model V2 in Settings first.');
+        return;
+    }
+    model2Active = !model2Active;
+    updateToggleButtons();
+}
+
+function updateToggleButtons() {
+    // Update Model 1 button
+    if (model1Active) {
+        toggleModel1Btn.classList.add('active');
+    } else {
+        toggleModel1Btn.classList.remove('active');
+    }
+    
+    // Update Model 2 button
+    if (model2Active) {
+        toggleModel2Btn.classList.add('active');
+    } else {
+        toggleModel2Btn.classList.remove('active');
+    }
+}
+
 function autoResizeTextarea() {
     messageInput.style.height = 'auto';
     messageInput.style.height = messageInput.scrollHeight + 'px';
@@ -160,12 +219,12 @@ async function sendMessage() {
     const message = messageInput.value.trim();
     if (!message || !currentChatId) return;
 
-    // Check if at least one model is enabled and has API key
-    const model1Ready = settings.model1Enabled && CONFIG.API_KEY_1;
-    const model2Ready = settings.model2Enabled && CONFIG.API_KEY_2;
+    // Check if at least one model is active (not just enabled)
+    const model1Ready = model1Active && settings.model1Enabled && CONFIG.API_KEY_1;
+    const model2Ready = model2Active && settings.model2Enabled && CONFIG.API_KEY_2;
 
     if (!model1Ready && !model2Ready) {
-        alert('Please enable at least one model and configure API keys in Settings.');
+        alert('Please activate at least one AI model using the toggle buttons in the header.');
         return;
     }
 
@@ -271,8 +330,7 @@ function createDualResponseContainer(messageId) {
     panel1.innerHTML = `
         <div class="response-header">
             <div class="model-name">
-                <span class="model-badge">Model 1</span>
-                Groq (Llama 3.1)
+                <span class="model-badge">AI Model V1</span>
             </div>
             <div class="response-actions">
                 <button class="response-action-btn" onclick="selectResponse('${messageId}', 'model1')">
@@ -297,8 +355,7 @@ function createDualResponseContainer(messageId) {
     panel2.innerHTML = `
         <div class="response-header">
             <div class="model-name">
-                <span class="model-badge">Model 2</span>
-                Eden Pro
+                <span class="model-badge">AI Model V2</span>
             </div>
             <div class="response-actions">
                 <button class="response-action-btn" onclick="selectResponse('${messageId}', 'model2')">
@@ -327,8 +384,7 @@ function createSingleResponseContainer(messageId, model) {
     container.className = 'dual-response-container single-model';
     container.id = `response-${messageId}`;
     
-    const modelName = model === 'model1' ? 'Groq (Llama 3.1)' : 'Eden Pro';
-    const modelLabel = model === 'model1' ? 'Model 1' : 'Model 2';
+    const modelLabel = model === 'model1' ? 'AI Model V1' : 'AI Model V2';
     
     const panel = document.createElement('div');
     panel.className = 'response-panel';
@@ -336,7 +392,6 @@ function createSingleResponseContainer(messageId, model) {
         <div class="response-header">
             <div class="model-name">
                 <span class="model-badge">${modelLabel}</span>
-                ${modelName}
             </div>
         </div>
         <div class="response-body">
@@ -356,7 +411,7 @@ function createSingleResponseContainer(messageId, model) {
 
 async function sendToModel1(message, messageId) {
     try {
-        console.log('Sending to Model 1 with history:', model1History);
+        console.log('Sending to AI Model V1 with history:', model1History);
         
         const response = await fetch(CONFIG.API_URL_1, {
             method: 'POST',
@@ -365,7 +420,7 @@ async function sendToModel1(message, messageId) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                model: 'llama-3.1-8b-instant',
+                model: 'llama-3.1-8b-instant', // Default model, can be changed if needed
                 messages: model1History,
                 temperature: 0.7,
                 max_tokens: 1000
@@ -373,7 +428,7 @@ async function sendToModel1(message, messageId) {
         });
 
         const data = await response.json();
-        console.log('Model 1 Response:', data);
+        console.log('AI Model V1 Response:', data);
         
         if (response.ok && data.choices && data.choices[0]) {
             const aiResponse = data.choices[0].message.content.trim();
@@ -390,80 +445,77 @@ async function sendToModel1(message, messageId) {
             
             return aiResponse;
         } else if (data.error) {
-            const errorMsg = `Error: ${data.error.message}`;
+            const errorMsg = `Error: ${data.error.message || JSON.stringify(data.error)}`;
             const contentEl = document.getElementById(`content1-${messageId}`) || document.getElementById(`content-${messageId}`);
             if (contentEl) {
                 contentEl.textContent = errorMsg;
             }
-            console.error('Model 1 Error:', data.error.message);
+            console.error('AI Model V1 Error:', data.error);
             return null;
         }
     } catch (error) {
-        const errorMsg = 'Connection error with Model 1';
+        const errorMsg = 'Connection error with AI Model V1';
         const contentEl = document.getElementById(`content1-${messageId}`) || document.getElementById(`content-${messageId}`);
         if (contentEl) {
             contentEl.textContent = errorMsg;
         }
-        console.error('Model 1 Network Error:', error);
+        console.error('AI Model V1 Network Error:', error);
         return null;
     }
 }
 
 async function sendToModel2(message, messageId) {
     try {
-        console.log('Sending to Model 2 with history:', model2History);
+        console.log('Sending to AI Model V2 with history:', model2History);
         
-        // Format for Eden API
-        const contents = model2History.map(msg => ({
-            role: msg.role === 'user' ? 'user' : 'model',
-            parts: [{ text: msg.content }]
-        }));
-
-        const response = await fetch(`${CONFIG.API_URL_2}?key=${CONFIG.API_KEY_2}`, {
+        // Use the same OpenAI-compatible format for consistency
+        const response = await fetch(CONFIG.API_URL_2, {
             method: 'POST',
             headers: {
+                'Authorization': `Bearer ${CONFIG.API_KEY_2}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                contents: contents,
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 1000,
-                }
+                model: 'llama-3.1-8b-instant', // Default model, can be changed if needed
+                messages: model2History,
+                temperature: 0.7,
+                max_tokens: 1000
             })
         });
 
         const data = await response.json();
-        console.log('Model 2 Response:', data);
+        console.log('AI Model V2 Response:', data);
         
-        if (response.ok && data.candidates && data.candidates[0]) {
-            const aiResponse = data.candidates[0].content.parts[0].text.trim();
+        if (response.ok && data.choices && data.choices[0]) {
+            const aiResponse = data.choices[0].message.content.trim();
             const contentEl = document.getElementById(`content2-${messageId}`) || document.getElementById(`content-${messageId}`);
             if (contentEl) {
                 contentEl.textContent = aiResponse;
             }
             
-            // Update token usage (approximate for Eden)
-            const tokensUsed = Math.ceil(aiResponse.length / 4);
-            updateTokenUsage(tokensUsed);
+            // Update token usage
+            if (data.usage) {
+                const tokensUsed = data.usage.total_tokens || 0;
+                updateTokenUsage(tokensUsed);
+            }
             
             return aiResponse;
         } else if (data.error) {
-            const errorMsg = `Error: ${data.error.message}`;
+            const errorMsg = `Error: ${data.error.message || JSON.stringify(data.error)}`;
             const contentEl = document.getElementById(`content2-${messageId}`) || document.getElementById(`content-${messageId}`);
             if (contentEl) {
                 contentEl.textContent = errorMsg;
             }
-            console.error('Model 2 Error:', data.error.message);
+            console.error('AI Model V2 Error:', data.error);
             return null;
         }
     } catch (error) {
-        const errorMsg = 'Connection error with Model 2';
+        const errorMsg = 'Connection error with AI Model V2';
         const contentEl = document.getElementById(`content2-${messageId}`) || document.getElementById(`content-${messageId}`);
         if (contentEl) {
             contentEl.textContent = errorMsg;
         }
-        console.error('Model 2 Network Error:', error);
+        console.error('AI Model V2 Network Error:', error);
         return null;
     }
 }
@@ -483,6 +535,11 @@ function selectResponse(messageId, model) {
         if (model2History.length > 0 && model2History[model2History.length - 1].role === 'assistant') {
             model2History.pop();
         }
+        
+        // Automatically disable Model 2 after selection
+        model2Active = false;
+        updateToggleButtons();
+        
     } else if (model === 'model2') {
         if (panel1) panel1.classList.add('hidden');
         selectedResponses.set(messageId, ['model2']);
@@ -491,6 +548,10 @@ function selectResponse(messageId, model) {
         if (model1History.length > 0 && model1History[model1History.length - 1].role === 'assistant') {
             model1History.pop();
         }
+        
+        // Automatically disable Model 1 after selection
+        model1Active = false;
+        updateToggleButtons();
     }
     
     // Update button states
@@ -629,8 +690,8 @@ function loadChat(chatId) {
         }
     }
     
-    console.log('Loaded chat. Model 1 history:', model1History);
-    console.log('Loaded chat. Model 2 history:', model2History);
+    console.log('Loaded chat. AI Model V1 history:', model1History);
+    console.log('Loaded chat. AI Model V2 history:', model2History);
     
     updateTokenDisplay();
     messageInput.focus();
@@ -646,8 +707,7 @@ function recreateDualResponse(messageId, content1, content2) {
     panel1.innerHTML = `
         <div class="response-header">
             <div class="model-name">
-                <span class="model-badge">Model 1</span>
-                Groq (Llama 3.1)
+                <span class="model-badge">AI Model V1</span>
             </div>
         </div>
         <div class="response-body">
@@ -665,8 +725,7 @@ function recreateDualResponse(messageId, content1, content2) {
     panel2.innerHTML = `
         <div class="response-header">
             <div class="model-name">
-                <span class="model-badge">Model 2</span>
-                Eden Pro
+                <span class="model-badge">AI Model V2</span>
             </div>
         </div>
         <div class="response-body">
@@ -685,8 +744,7 @@ function recreateDualResponse(messageId, content1, content2) {
 }
 
 function recreateSingleResponse(messageId, content, model) {
-    const modelName = model === 'model1' ? 'Groq (Llama 3.1)' : 'Eden Pro';
-    const modelLabel = model === 'model1' ? 'Model 1' : 'Model 2';
+    const modelLabel = model === 'model1' ? 'AI Model V1' : 'AI Model V2';
     
     const container = document.createElement('div');
     container.className = 'dual-response-container single-model';
@@ -697,7 +755,6 @@ function recreateSingleResponse(messageId, content, model) {
         <div class="response-header">
             <div class="model-name">
                 <span class="model-badge">${modelLabel}</span>
-                ${modelName}
             </div>
         </div>
         <div class="response-body">
@@ -843,6 +900,12 @@ function saveSettings() {
     settings.apiKey2 = apiKey2Input.value.trim();
     CONFIG.API_KEY_1 = settings.apiKey1;
     CONFIG.API_KEY_2 = settings.apiKey2;
+    
+    // Save API URLs (optional)
+    settings.apiUrl1 = apiUrl1Input.value.trim() || 'https://api.groq.com/openai/v1/chat/completions';
+    settings.apiUrl2 = apiUrl2Input.value.trim() || 'https://api.groq.com/openai/v1/chat/completions';
+    CONFIG.API_URL_1 = settings.apiUrl1;
+    CONFIG.API_URL_2 = settings.apiUrl2;
     
     // Save model enabled states
     settings.model1Enabled = enableModel1.checked;
