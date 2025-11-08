@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreeChat - Dual AI Interface</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <!-- Sidebar Toggle Button -->
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Toggle Sidebar">
+            <img src="icons/Side-Bar.png" alt="Toggle Sidebar">
+        </button>
+
+        <!-- Action Buttons -->
+        <div class="sidebar-actions">
+            <button class="action-btn" id="renameChatBtn" title="Rename Chat">
+                <img src="icons/Rename-Chat.png" alt="Rename">
+                <span class="action-text">Rename</span>
+            </button>
+            <button class="action-btn" id="saveChatBtn" title="Save Chat">
+                <img src="icons/Save-Chat.png" alt="Save">
+                <span class="action-text">Save</span>
+            </button>
+        </div>
+
+        <!-- New Chat Button -->
+        <div class="new-chat-section">
+            <button class="new-chat-btn" id="newChatBtn" title="New Chat">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span class="btn-text">New Chat</span>
+            </button>
+        </div>
+
+        <!-- Sidebar Content -->
+        <div class="sidebar-content" id="sidebarContent">
+            <div class="sidebar-header">
+                <h2>Conversations</h2>
+            </div>
+            
+            <div class="chat-list" id="chatList">
+                <!-- Chat items will be dynamically added here -->
+            </div>
+
+            <!-- Token Usage Section -->
+            <div class="token-section">
+                <button class="toggle-tokens-btn" id="toggleTokensBtn">
+                    <img src="icons/Token.png" alt="Token" class="token-icon">
+                    <span class="token-text">Token Usage</span>
+                    <svg class="arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+                <div class="token-info" id="tokenInfo">
+                    <div class="token-item">
+                        <span>Current Chat</span>
+                        <strong id="currentChatTokens">0</strong>
+                    </div>
+                    <div class="token-item">
+                        <span>Today's Total</span>
+                        <strong id="todayTokens">0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="settings-section">
+                <button class="settings-btn" id="settingsBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6m0-18l-1.5 3m3 0L12 1m0 22l-1.5-3m3 0L12 23M1 12h6m6 0h6M1 12l3 1.5m0-3L1 12m22 0h-6m-6 0H1m22 0l-3 1.5m0-3l3-1.5"></path>
+                    </svg>
+                    <span class="settings-text">Settings</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="modal-close" id="closeSettingsBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Theme Settings -->
+                <div class="settings-group">
+                    <h3>Theme</h3>
+                    <div class="theme-options">
+                        <button class="theme-btn active" data-theme="modern">
+                            <span class="theme-preview modern-preview"></span>
+                            <span>Modern Dark</span>
+                        </button>
+                        <button class="theme-btn" data-theme="dark">
+                            <span class="theme-preview dark-preview"></span>
+                            <span>Classic Dark</span>
+                        </button>
+                        <button class="theme-btn" data-theme="light">
+                            <span class="theme-preview light-preview"></span>
+                            <span>Light</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AI Model Settings -->
+                <div class="settings-group">
+                    <h3>AI Models</h3>
+                    <div class="model-toggle">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="enableModel1" checked>
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-text">Enable Model 1 (Groq)</span>
+                        </label>
+                    </div>
+                    <div class="model-toggle">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="enableModel2" checked>
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-text">Enable Model 2 (Gemini)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- API Keys -->
+                <div class="settings-group">
+                    <h3>API Configuration</h3>
+                    <div class="api-input-group">
+                        <label>Model 1 API Key (Groq)</label>
+                        <input type="password" id="apiKey1" placeholder="Enter Groq API Key">
+                    </div>
+                    <div class="api-input-group">
+                        <label>Model 2 API Key (Gemini)</label>
+                        <input type="password" id="apiKey2" placeholder="Enter Gemini API Key">
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <button class="save-settings-btn" id="saveSettingsBtn">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <div class="header-left">
+                <span class="chat-title" id="chatTitle">New Chat</span>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+                <h2>Start a Conversation</h2>
+                <p>Ask me anything or start typing below</p>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <textarea 
+                    id="messageInput" 
+                    placeholder="Type your message..."
+                    rows="1"
+                ></textarea>
+                <button id="sendButton">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
