@@ -21,8 +21,7 @@ https://devregan.github.io/DualChatAI/
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/freechat.git
-   cd freechat
+    git clone https://github.com/devRegan/DualChatAI.git
    ```
 
 2. Open `index.html` in your browser
