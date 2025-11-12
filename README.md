@@ -14,6 +14,10 @@ To use it, you only need an API key from the official Groq website.
 ## Live preview
 https://devregan.github.io/DualChatAI/
 
+## Live Preview
+[DualChatAI Live](https://devregan.github.io/DualChatAI/)
+
+
 ## Example Setup
 ```bash
 # Clone the repository
