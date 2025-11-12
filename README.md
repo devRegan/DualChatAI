@@ -11,6 +11,9 @@ To use it, you only need an API key from the official Groq website.
    - AI Model V2 API Key  
 4. You can use either one or both fields. A single valid key is enough for the system to work.
 
+## Live preview
+https://devregan.github.io/DualChatAI/
+
 ## Example Setup
 ```bash
 # Clone the repository
